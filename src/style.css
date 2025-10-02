@@ -12,7 +12,8 @@ body{
   display: grid;
   margin: 10px;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: 2.5rem;
+  margin: 10%;
 }
 
 .card{
@@ -20,6 +21,7 @@ body{
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 30px;
 }
 
 .image-container{
