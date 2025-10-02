@@ -27,7 +27,7 @@ if (filtro) {
 */
 if (filtro) {
   fromEvent(filtro, 'change').subscribe((async () => {
-    const apiFiltrado = `https://dragonball-api.com/api/characters?race=${filtro.value}`;
+    const apiFiltrado = `https://dragonball-api.com/api/characters?race=${filtro.value}&affiliation=${filtroaf.value}`;
 
     const respuestaFiltrado = fromFetch(apiFiltrado).pipe(
       switchMap((response) => {
