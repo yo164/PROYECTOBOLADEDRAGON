@@ -6,6 +6,8 @@ import { fromFetch } from 'rxjs/fetch';
 
 
 const filtro = document.getElementById('race-filter') as HTMLSelectElement;
+
+const filtroaf = document.getElementById('affiliation-filter') as HTMLSelectElement;
 /*
 if (filtro) {
   filtro.addEventListener('change', () => {
@@ -27,7 +29,7 @@ if (filtro) {
 */
 if (filtro) {
   fromEvent(filtro, 'change').subscribe((async () => {
-    const apiFiltrado = `https://dragonball-api.com/api/characters?race=${filtro.value}&affiliation=${filtroaf.value}`;
+    const apiFiltrado = `https://dragonball-api.com/api/characters?race=${filtro.value}`;
 
     const respuestaFiltrado = fromFetch(apiFiltrado).pipe(
       switchMap((response) => {
@@ -67,7 +69,7 @@ if (filtro) {
       });
     })
   )
-}
+} 
 
 
 
