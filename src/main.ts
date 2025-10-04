@@ -24,13 +24,16 @@ if (filtro) {
   filtro.forEach((filtrado) => {
     fromEvent(filtrado, 'change').pipe(
       switchMap(() => {
-        if (filtrado.id === 'race-filter' && filtrado.value !== '') {
-          url = `https://dragonball-api.com/api/characters?race=${filtrado.value}`;
-        }else if (filtrado.id === 'affiliation-filter' && filtrado.value !== '' ) {
-          url = `https://dragonball-api.com/api/characters?affiliation=${filtrado.value}`;
-        }else{
+
+        if ((filtrado.id === 'race-filter' || filtrado.id === 'affiliation-filter') && filtrado.value === '') {
           url = 'https://dragonball-api.com/api/characters?limit=100'
-        }
+        } else if(filtrado.id === 'race-filter' && filtrado.value !== '') {
+          url = `https://dragonball-api.com/api/characters?race=${filtrado.value}`
+        }else if(filtrado.id === 'affiliation-filter' && filtrado.value !== ''){
+          url = `https://dragonball-api.com/api/characters?affiliation=${filtrado.value}`;
+        } 
+        
+
         return obtenerPersonajes(url);
       })
     ).subscribe(renderPersonajes)
@@ -77,7 +80,7 @@ function obtenerPersonajes(url: string) {
     }),
     map((data) => {
       if ('items' in data) {
-        return data.items
+        return data.items;
       }
       return data;
     }), 
@@ -89,7 +92,124 @@ function obtenerPersonajes(url: string) {
   
 }
 
-   
+function obtenerPlanetas(url: string) {
+  return fromFetch(url).pipe(
+    switchMap((response) => {
+      if (!response.ok) {
+        throw new Error('Error al obtener los planetas de la api');
+        
+      }
+      return response.json();
+    }),
+    map((data) => {
+      if('items' in data){
+        return data.items;
+      }
+      return data;
+    }),
+    catchError((err) => {
+      console.error(err);
+      return of([]);
+    })
+  )
+}
+
+function renderPlanetas(planetas: any[]){
+   const app = document.getElementById('app');
+      if (app) {
+        app.innerHTML = ``;
+        planetas.forEach(value => {
+          app.innerHTML += `
+          
+            <div class="planetCard">
+              <div class="image-container">
+                 <img src="${value['image']}" alt="${value['name']}"/>
+              </div>
+              <div class="data-container">
+                <h2>${value['name']}</h2>
+                <h3>Exists: ${!value['isDestroyed']}</h3>
+                <a class="botonVisitar" href="#" data-id="${value['id']}">Visitar </a>
+              </div>
+            </div>\n
+          `;
+        });
+        console.log(planetas)
+        conectarEventosVisitar();
+      }
+}
+
+function conectarEventosVisitar() {
+  const botones = document.querySelectorAll<HTMLAnchorElement>('.botonVisitar');
+
+  botones.forEach((boton) => {
+    fromEvent(boton, 'click').pipe(
+      switchMap((event) => {
+        event.preventDefault();
+        const id = boton.getAttribute('data-id');
+        if(!id) throw new Error('id no encontrado');
+        return obtenerPlanetaPorId(parseInt(id));
+      })
+    ).subscribe(renderPlaneta);
+  }),
+  catchError((err) => {
+    console.error(err);
+    return of([]);
+  })
+  
+}
+const botonPla = document.getElementById('planets');
+//boton que nos muestra todos los planetas
+if (botonPla) {
+  fromEvent(botonPla, 'click').pipe(
+    switchMap(() => obtenerPlanetas('https://dragonball-api.com/api/planets?limit=100'))
+  ).subscribe(renderPlanetas);
+}
+
+function obtenerPlanetaPorId(id : number) {
+  return fromFetch('https://dragonball-api.com/api/planets/' + id).pipe(
+    switchMap((response) => {
+      if (!response.ok) {
+        throw new Error('Error al obtener planetas por id');
+      }
+      return response.json();
+    })
+  )
+}
+
+function renderPlaneta(planeta: any){
+   const app = document.getElementById('app');
+      if (app) {
+        app.innerHTML = ``;
+        
+        const charactersFromPlanet  = planeta.characters;
+        if (!charactersFromPlanet) {
+          throw new Error('no hay hbitantes en este planeta');
+        }
+        const listaPersonajes = charactersFromPlanet
+        .map((personaje: any) => `<li>${personaje.name}</li>`)
+        .join('');
+          app.innerHTML += `
+            <div class="planetPage">
+              <div class="image-container">
+                 <img src="${planeta.image}" alt="${planeta.name}"/>
+              </div>
+              <div class="data-container">
+                <h2>${planeta.name}</h2>
+                <h3>Exists: ${!planeta.isDestroyed}</h3>
+                <h4>Descripción</h4>
+                <p>${planeta.description}</p>
+              </div>
+              <div class="charactersFromPlanet">
+              <ul>
+                ${listaPersonajes}
+              </ul>
+              </div>
+            </div>\n
+          `;
+        
+        console.log(planeta)
+      }
+}
   //salida :response{...}
 
 
