@@ -10,44 +10,34 @@ import { take } from 'rxjs/operators';
 
 
 
-const filtro = document.getElementById('race-filter') as HTMLSelectElement;
+const filtro = document.querySelectorAll<HTMLSelectElement>('select');
 
 //const filtroaf = document.getElementById('affiliation-filter') as HTMLSelectElement;
 /*
-if (filtro) {
-  filtro.addEventListener('change', () => {
-    const race: string = filtro.value;
-    const url: string = `https://dragonball-api.com/api/characters?race=${race}`;
-    fetch(url)
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('falla aqui');
-        }
-        return res.json();
-      }).then(data => {
-        if (data) {
-          console.log(data);
-        }
-      }).catch(err => console.error(err));
-  });
-}
+
 */
+//filtra para raza o todos los personajes a la vez
 
 if (filtro) {
   let url = '';
-  fromEvent(filtro, 'change').pipe(
-    
-    switchMap(() => {
-      if (filtro.value == '') {
-         url = 'https://dragonball-api.com/api/characters?limit=100';
-      } else {
-        url = `https://dragonball-api.com/api/characters?race=${filtro.value}`;
-      }
-      return obtenerPersonajes(url);
-    })
-  ).subscribe(renderPersonajes)
+
+  filtro.forEach((filtrado) => {
+    fromEvent(filtrado, 'change').pipe(
+      switchMap(() => {
+        if (filtrado.id === 'race-filter' && filtrado.value !== '') {
+          url = `https://dragonball-api.com/api/characters?race=${filtrado.value}`;
+        }else if (filtrado.id === 'affiliation-filter' && filtrado.value !== '' ) {
+          url = `https://dragonball-api.com/api/characters?affiliation=${filtrado.value}`;
+        }else{
+          url = 'https://dragonball-api.com/api/characters?limit=100'
+        }
+        return obtenerPersonajes(url);
+      })
+    ).subscribe(renderPersonajes)
+  });
    
-}
+}//no filtra bien creo que primero tengo que meter el filtro de todos o d alguno entonces luego coprobar que si alguno solo uno viene vacio
+//componer la url de se filtro mas el valor y si viene de los dos acumular de algua manera en una variable montar la url con los dos filtros
 
 
 
@@ -55,29 +45,6 @@ if (filtro) {
 fromEvent(document, 'DOMContentLoaded').pipe(
   switchMap(() => obtenerPersonajes('https://dragonball-api.com/api/characters?limit=100')) 
 ).subscribe(renderPersonajes);
-
-
-   
-  //salida :response{...}
-
-
-
-/*
-
-switchMap(() => fromFetch('api'))
-switchMap(response => response.jso()),
-tap(data => {
-  const app document.querySelector<HTMLDivElement>('#app')
-  app.innerHTML= `
-  h1 dragon ball characters
-  ul
-  ${data['items'].map(char: any) =<li><img src=${data['img']}}
-  ul
-  `
-})
-  */
-
-
 
 function renderPersonajes(personajes: any[]) {
   const app = document.getElementById('app');
@@ -121,6 +88,29 @@ function obtenerPersonajes(url: string) {
   )
   
 }
+
+   
+  //salida :response{...}
+
+
+
+/*
+
+switchMap(() => fromFetch('api'))
+switchMap(response => response.jso()),
+tap(data => {
+  const app document.querySelector<HTMLDivElement>('#app')
+  app.innerHTML= `
+  h1 dragon ball characters
+  ul
+  ${data['items'].map(char: any) =<li><img src=${data['img']}}
+  ul
+  `
+})
+  */
+
+
+
 
 
 
