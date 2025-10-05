@@ -6,18 +6,30 @@ import { interval } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 
-
-
-
-
-const filtro = document.querySelectorAll<HTMLSelectElement>('select');
-
 //const filtroaf = document.getElementById('affiliation-filter') as HTMLSelectElement;
 /*
 
 */
 //filtra para raza o todos los personajes a la vez
 
+//no filtra bien creo que primero tengo que meter el filtro de todos o d alguno entonces luego coprobar que si alguno solo uno viene vacio
+//componer la url de se filtro mas el valor y si viene de los dos acumular de algua manera en una variable montar la url con los dos filtros
+
+
+//ELEMENTOS DEL DOM
+const botonPla = document.getElementById('planets');
+//boton que nos muestra todos los planetas
+if (botonPla) {
+  fromEvent(botonPla, 'click').pipe(
+    switchMap(() => obtenerPlanetas('https://dragonball-api.com/api/planets?limit=100'))
+  ).subscribe(renderPlanetas);
+}
+
+
+
+
+//OBTENER PARAMETROS DE LOS FILTROS PARA PERSONAJES
+const filtro = document.querySelectorAll<HTMLSelectElement>('select');
 if (filtro) {
   let url = '';
 
@@ -39,37 +51,37 @@ if (filtro) {
     ).subscribe(renderPersonajes)
   });
    
-}//no filtra bien creo que primero tengo que meter el filtro de todos o d alguno entonces luego coprobar que si alguno solo uno viene vacio
-//componer la url de se filtro mas el valor y si viene de los dos acumular de algua manera en una variable montar la url con los dos filtros
-
-
+}
 
 //inicializar aplicacion cuando el DOM este listo
 fromEvent(document, 'DOMContentLoaded').pipe(
   switchMap(() => obtenerPersonajes('https://dragonball-api.com/api/characters?limit=100')) 
 ).subscribe(renderPersonajes);
 
-function renderPersonajes(personajes: any[]) {
-  const app = document.getElementById('app');
-      if (app) {
-        app.innerHTML = ``;
-        personajes.forEach(value => {
-          app.innerHTML += `
-            <div class="card">
-              <div class="image-container">
-                 <img src="${value['image']}" alt="${value['name']}"/>
-              </div>
-              <div class="data-container">
-                <h2>${value['name']}</h2>
-                <h3>Ki: ${value['ki']}</h3>
-              </div>
-            </div>\n
-          `;
-        });
-        console.log(personajes)
-      }
+
+//ACTIVA LOS ANCHOR PARA VISITAR PLANETAS
+function conectarEventosVisitar() {
+  const botones = document.querySelectorAll<HTMLAnchorElement>('.botonVisitar');
+
+  botones.forEach((boton) => {
+    fromEvent(boton, 'click').pipe(
+      switchMap((event) => {
+        event.preventDefault();
+        const id = boton.getAttribute('data-id');
+        if(!id) throw new Error('id no encontrado');
+        return obtenerPlanetaPorId(parseInt(id));
+      })
+    ).subscribe(renderPlaneta);
+  }),
+  catchError((err) => {
+    console.error(err);
+    return of([]);
+  })
+  
 }
 
+//FUNCIONES PARA OBTENER PERSONAJES Y PLANETAS
+//PERSONAJES 
 function obtenerPersonajes(url: string) {
   return fromFetch(url).pipe(
     switchMap((response) => {
@@ -91,7 +103,7 @@ function obtenerPersonajes(url: string) {
   )
   
 }
-
+//PLANETAS
 function obtenerPlanetas(url: string) {
   return fromFetch(url).pipe(
     switchMap((response) => {
@@ -113,7 +125,47 @@ function obtenerPlanetas(url: string) {
     })
   )
 }
+//PLANETAS POR ID
+function obtenerPlanetaPorId(id : number) {
+  return fromFetch('https://dragonball-api.com/api/planets/' + id).pipe(
+    switchMap((response) => {
+      if (!response.ok) {
+        throw new Error('Error al obtener planetas por id');
+      }
+      return response.json();
+    })
+  )
+}
 
+
+
+
+
+
+//RENDER DE PERSONAJES Y PLANETAS
+//PERSONAJES 
+function renderPersonajes(personajes: any[]) {
+  const app = document.getElementById('app');
+      if (app) {
+        app.innerHTML = ``;
+        personajes.forEach(value => {
+          app.innerHTML += `
+            <div class="card">
+              <div class="image-container">
+                 <img src="${value['image']}" alt="${value['name']}"/>
+              </div>
+              <div class="data-container">
+                <h2>${value['name']}</h2>
+                <h3>Ki: ${value['ki']}</h3>
+              </div>
+            </div>\n
+          `;
+        });
+        console.log(personajes)
+      }
+}
+
+//PLANETAS 
 function renderPlanetas(planetas: any[]){
    const app = document.getElementById('app');
       if (app) {
@@ -134,48 +186,12 @@ function renderPlanetas(planetas: any[]){
           `;
         });
         console.log(planetas)
+        //CARGA EL ADDEVENTLISTENER DE LOS ANCHOR
         conectarEventosVisitar();
       }
 }
 
-function conectarEventosVisitar() {
-  const botones = document.querySelectorAll<HTMLAnchorElement>('.botonVisitar');
-
-  botones.forEach((boton) => {
-    fromEvent(boton, 'click').pipe(
-      switchMap((event) => {
-        event.preventDefault();
-        const id = boton.getAttribute('data-id');
-        if(!id) throw new Error('id no encontrado');
-        return obtenerPlanetaPorId(parseInt(id));
-      })
-    ).subscribe(renderPlaneta);
-  }),
-  catchError((err) => {
-    console.error(err);
-    return of([]);
-  })
-  
-}
-const botonPla = document.getElementById('planets');
-//boton que nos muestra todos los planetas
-if (botonPla) {
-  fromEvent(botonPla, 'click').pipe(
-    switchMap(() => obtenerPlanetas('https://dragonball-api.com/api/planets?limit=100'))
-  ).subscribe(renderPlanetas);
-}
-
-function obtenerPlanetaPorId(id : number) {
-  return fromFetch('https://dragonball-api.com/api/planets/' + id).pipe(
-    switchMap((response) => {
-      if (!response.ok) {
-        throw new Error('Error al obtener planetas por id');
-      }
-      return response.json();
-    })
-  )
-}
-
+//PLANETA 
 function renderPlaneta(planeta: any){
    const app = document.getElementById('app');
       if (app) {
