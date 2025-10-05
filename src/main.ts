@@ -17,6 +17,7 @@ import { take } from 'rxjs/operators';
 
 
 //ELEMENTOS DEL DOM
+//espera el click en el boton para ir a planetas
 const botonPla = document.getElementById('planets');
 //boton que nos muestra todos los planetas
 if (botonPla) {
@@ -25,6 +26,15 @@ if (botonPla) {
   ).subscribe(renderPlanetas);
 }
 
+//espera el click en el boton para volver a todos los personajes
+
+const btnChars = document.getElementById('chars');
+//boton que nos muestra todos los personajes
+if (btnChars) {
+  fromEvent(btnChars, 'click').pipe(
+    switchMap(() => obtenerPersonajes('https://dragonball-api.com/api/characters?limit=100'))
+  ).subscribe(renderPersonajes);
+}
 
 
 
@@ -103,6 +113,8 @@ function obtenerPersonajes(url: string) {
   )
   
 }
+
+//obtener personajes por id(para conectar con los anchor de la visita del planeta)
 //PLANETAS
 function obtenerPlanetas(url: string) {
   return fromFetch(url).pipe(
@@ -202,7 +214,7 @@ function renderPlaneta(planeta: any){
           throw new Error('no hay hbitantes en este planeta');
         }
         const listaPersonajes = charactersFromPlanet
-        .map((personaje: any) => `<li>${personaje.name}</li>`)
+        .map((personaje: any) => `<li><a href="#">${personaje.name}</a></li>`)
         .join('');
           app.innerHTML += `
             <div class="planetPage">
