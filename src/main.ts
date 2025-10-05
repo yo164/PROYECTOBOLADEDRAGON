@@ -150,7 +150,7 @@ function obtenerPlanetaPorId(id : number) {
 }
 
 
-
+//se crea nueva rama para hacer solo el archivo ts
 
 
 
