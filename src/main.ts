@@ -41,21 +41,51 @@ if (btnChars) {
 //OBTENER PARAMETROS DE LOS FILTROS PARA PERSONAJES
 const filtro = document.querySelectorAll<HTMLSelectElement>('select');
 if (filtro) {
-  let url = '';
-
+  
+//?race=Saiyan&affiliation=Z fighter&gender=male
   filtro.forEach((filtrado) => {
     fromEvent(filtrado, 'change').pipe(
+
       switchMap(() => {
+        let url = 'https://dragonball-api.com/api/characters?';
+        let parametros: string[] = [];
+        filtro.forEach((fil) => {
+            if (fil.id === 'race-filter'&& fil.value) {
+              parametros.push(`race=${fil.value}`);
+            }
+            if (fil.id === 'affiliation-filter' && fil.value) {
+              const buenos: string[] = ['Z Fighter', 'Namekian Warrior'];
+              const malos: string[] = ['Red Ribbon Army', 'Army of Frieza', 'Villain'];
+              const neutrales: string[] = ['Freelancer', 'Pride Troopers', 'Assistant of Vermoud', 'God', 'Assistant of Beerus', 'Others'];
 
-        if ((filtrado.id === 'race-filter' || filtrado.id === 'affiliation-filter') && filtrado.value === '') {
-          url = 'https://dragonball-api.com/api/characters?limit=100'
-        } else if(filtrado.id === 'race-filter' && filtrado.value !== '') {
-          url = `https://dragonball-api.com/api/characters?race=${filtrado.value}`
-        }else if(filtrado.id === 'affiliation-filter' && filtrado.value !== ''){
-          url = `https://dragonball-api.com/api/characters?affiliation=${filtrado.value}`;
-        } 
+              if (fil.value === 'buenos') {
+                parametros.push(`affiliation=${buenos[0]}&affiliation=${buenos[1]}`);
+              }
+              if (fil.value === 'malos') {
+                parametros.push(`affiliation=${malos[0]}`);
+                parametros.push(`affiliation=${malos[1]}`);
+                parametros.push(`affiliation=${malos[2]}`);
+
+              }
+              if (fil.value === 'neutrales') {
+                parametros.push(`affiliation=${neutrales[0]}`);
+                parametros.push(`affiliation=${neutrales[1]}`);
+                parametros.push(`affiliation=${neutrales[2]}`);
+                parametros.push(`affiliation=${neutrales[3]}`);
+                parametros.push(`affiliation=${neutrales[4]}`);
+                parametros.push(`affiliation=${neutrales[5]}`);
+              }
+              
+            }
+            if (fil.id === 'gender-filter' && fil.value) {
+              parametros.push(`gender=${fil.value}`);
+            }
+            });
         
+      let concatenado = parametros.join('&');
 
+      url += concatenado;
+      console.log('aqui esta el filtro paco' ,concatenado);
         return obtenerPersonajes(url);
       })
     ).subscribe(renderPersonajes)
